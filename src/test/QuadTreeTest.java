@@ -69,8 +69,8 @@ public class QuadTreeTest {
 		for (long i = 1; i <= 100; i++) {
 			DataEntry de = new DataEntry();
 			de.setId(i);
-			de.setGeoLocation(new GeoLocation(random.nextInt(200) + 1, random
-					.nextInt(200) + 1));
+			de.setGeoLocation(new GeoLocation(random.nextInt(150) + 1, random
+					.nextInt(250) + 1));
 			dataBulk.add(de);
 
 			System.out.println(de.getId() + " => "

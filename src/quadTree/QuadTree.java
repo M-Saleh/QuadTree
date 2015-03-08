@@ -58,9 +58,7 @@ public class QuadTree {
 
 		// Check if search boundry box intersect with a quad, Return
 		// intersected quad
-		if (node.containsPoint(upperRight) || node.containsPoint(lowerLeft)
-				|| node.containsPoint(upperLeft)
-				|| node.containsPoint(lowerRight)) {
+		if (node.interset(upperRight, lowerLeft)) {
 			if (node.children != null) {
 				for (Node childNode : node.children) {
 					search(dataEntries, childNode, upperRight, lowerLeft,

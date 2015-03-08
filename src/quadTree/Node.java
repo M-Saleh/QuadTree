@@ -81,6 +81,16 @@ public class Node {
 			return false;
 	}
 
+	public boolean interset(GeoLocation bb_upperRight, GeoLocation bb_lowerLeft) {
+		if ((upperRight.getLatitude() < bb_lowerLeft.getLatitude())
+				|| (lowerLeft.getLatitude() > bb_upperRight.getLatitude())
+				|| (lowerLeft.getLongitude() > bb_upperRight.getLongitude())
+				|| (upperRight.getLongitude() < bb_lowerLeft.getLongitude()))
+			return false;
+		else
+			return true;
+	}
+
 	private void subdivide() {
 		// Create the 4 children with specific area
 		children = new Node[QuadTree.NUMBER_OF_CHILDREN];
@@ -129,8 +139,7 @@ public class Node {
 				+ " , lowerLeft: " + lowerLeft.getLatitude() + ","
 				+ lowerLeft.getLongitude());
 		for (DataEntry dataEntry : dataEntries) {
-			if (dataEntry != null)
-			{
+			if (dataEntry != null) {
 				QuadTree.numberOfDataEntries++;
 				System.out.print(dataEntry.getId() + ",");
 			}
