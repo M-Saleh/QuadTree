@@ -17,7 +17,7 @@ public class QuadTree {
 	public static final int NUMBER_OF_CHILDREN = 4; // couldn't be changed
 	public Node rootNode;
 	
-	public static int numberOfDataEntries = 0 ; 
+	public static int numberOfQuads = 0 ; 
 
 	public QuadTree(int maxCapacity, GeoLocation upperRight,
 			GeoLocation lowerLeft) {
@@ -88,6 +88,7 @@ public class QuadTree {
 
 	public void printAllTree(Node root) {
 		if (root.dataEntries != null) {
+			numberOfQuads ++ ;
 			root.printIds();
 			return;
 		} else {

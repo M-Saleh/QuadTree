@@ -140,7 +140,6 @@ public class Node {
 				+ lowerLeft.getLongitude());
 		for (DataEntry dataEntry : dataEntries) {
 			if (dataEntry != null) {
-				QuadTree.numberOfDataEntries++;
 				System.out.print(dataEntry.getId() + ",");
 			}
 		}
