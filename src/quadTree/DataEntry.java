@@ -1,21 +1,21 @@
 /**
- * 
+ * DataEntry, for simplicity DataEntry just has id and location
  */
 package quadTree;
 
-import java.util.Date;
-
 /**
- * @author elmongui
+ * @author saleh
  * 
  */
 public class DataEntry {
 
     private Long id;
-    private Date time;
     private GeoLocation geoLocation;
 
-    String rawData;
+    /**
+     * 
+     */
+    public DataEntry() {}
 
 
     /**
@@ -26,36 +26,16 @@ public class DataEntry {
     }
 
     /**
-     * @param id the id to set
-     */
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    /**
-     * @return the time
-     */
-    public Date getTime() {
-        return time;
-    }
-
-    /**
-     * @param time the time to set
-     */
-    public void setTime(Date time) {
-        this.time = time;
-    }
-
-    /**
      * @return the geoLocation
      */
     public GeoLocation getGeoLocation() {
         return geoLocation;
     }
 
-    /**
-     * @param geoLocation the geoLocation to set
-     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public void setGeoLocation(GeoLocation geoLocation) {
         this.geoLocation = geoLocation;
     }

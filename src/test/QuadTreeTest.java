@@ -1,8 +1,18 @@
+/**
+ * Test QuadTree
+ * 
+ * @author saleh
+ * 
+ */
+
 package test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 
 import org.junit.Test;
@@ -11,138 +21,192 @@ import quadTree.DataEntry;
 import quadTree.GeoLocation;
 import quadTree.QuadTree;
 
-
 public class QuadTreeTest {
 
-    // Test Get All DataEntries
+    /**
+     * Test search in whole world
+     */
     @Test
-    public void testQuadTree_1() {
-        double upperLat = 100;
-        double upperLong = 50;
-        double lowerLat = 20;
-        double lowerLong = 10;
-        int maxCapacity = 100;
+    public void testSearchingWorld() {
+        int maxCapacity = 1000;
         int numberOfDataEntries = 100000;
 
-        QuadTree qTree =
-                new QuadTree(maxCapacity, new GeoLocation(upperLat, upperLong), new GeoLocation(
-                        lowerLat, lowerLong));
+        QuadTree QuadTree = new QuadTree(maxCapacity);
 
-        ArrayList<DataEntry> dataBulk = new ArrayList<DataEntry>();
+        Queue<DataEntry> dataEntries = new LinkedList<DataEntry>();
         Random random = new Random();
 
         for (long i = 1; i <= numberOfDataEntries; i++) {
             DataEntry de = new DataEntry();
             de.setId(i);
-            de.setGeoLocation(new GeoLocation(random.nextInt((int) (upperLat - lowerLat))
-                    + lowerLat, random.nextInt((int) (upperLong - lowerLong)) + lowerLong));
-            dataBulk.add(de);
+            de.setGeoLocation(new GeoLocation(random.nextInt((int) (90 + 90)) + -90, random
+                    .nextInt((int) (180 + 180)) + -180));
+            dataEntries.add(de);
         }
-
-        qTree.index(dataBulk);
-        ArrayList<DataEntry> result =
-                qTree.search(new GeoLocation(upperLat, upperLong), new GeoLocation(lowerLat,
-                        lowerLong));
+        QuadTree.index(dataEntries);
+        List<DataEntry> result =
+                QuadTree.search(new GeoLocation(-90, -180), new GeoLocation(90, 180));
 
         // Search for all DataEntries in dataBulk in the result
-        assertEquals(dataBulk.size(), result.size());
+        assertEquals(dataEntries.size(), result.size());
         // Ensure no redundant in the result
-        for (DataEntry dataEntry : dataBulk)
+        for (DataEntry dataEntry : dataEntries)
             assertFalse(!result.contains(dataEntry));
     }
 
-    // Test Get subset of DataEntries
+    /**
+     * Test Get subset of DataEntries
+     * 
+     */
     @Test
-    public void testQuadTree_2() {
-        double upperLat = 180;
-        double upperLong = 360;
-        double lowerLat = 0;
-        double lowerLong = 0;
-        int maxCapacity = 15;
-        final int numberOfEntriesInRang = 10000;
+    public void testSearchSubsets() {
+        int maxCapacity = 256000;
+        final int numberOfEntriesInRang = 1000000;
 
-        QuadTree qTree =
-                new QuadTree(maxCapacity, new GeoLocation(upperLat, upperLong), new GeoLocation(
-                        lowerLat, lowerLong));
+        QuadTree QuadTree = new QuadTree(maxCapacity);
 
         Random random = new Random();
-        ArrayList<DataEntry> dataBulk = new ArrayList<DataEntry>();
+        Queue<DataEntry> dataEntries = new LinkedList<DataEntry>();
         // (1) Range => Lat:(1..90), Long(1..180)
         for (long i = 1; i <= numberOfEntriesInRang; i++) {
             DataEntry de = new DataEntry();
             de.setId(i);
-            de.setGeoLocation(new GeoLocation(random.nextInt(90) + 1, random.nextInt(180) + 1));
-            dataBulk.add(de);
+            de.setGeoLocation(new GeoLocation(random.nextInt(90) + 1 - 90,
+                    random.nextInt(180) + 1 - 180));
+            dataEntries.add(de);
         }
-        qTree.index(dataBulk);
+        QuadTree.index(dataEntries);
+        List<DataEntry> result =
+                QuadTree.search(new GeoLocation(0 - 90, 0 - 180), new GeoLocation(90 - 90,
+                        180 - 180));
 
-        ArrayList<DataEntry> result = qTree.search(new GeoLocation(90, 180), new GeoLocation(0, 0));
         assertEquals(numberOfEntriesInRang, result.size());
 
         // (2) Range => Lat:(91..181), Long(135..270)
-        dataBulk = new ArrayList<DataEntry>();
+        dataEntries = new LinkedList<DataEntry>();
         for (long i = numberOfEntriesInRang + 1; i <= 2 * numberOfEntriesInRang; i++) {
             DataEntry de = new DataEntry();
             de.setId(i);
-            de.setGeoLocation(new GeoLocation(random.nextInt(45) + 91, random.nextInt(90) + 181));
-            dataBulk.add(de);
+            de.setGeoLocation(new GeoLocation(random.nextInt(45) + 91 - 90,
+                    random.nextInt(90) + 181 - 180));
+            dataEntries.add(de);
         }
-        qTree.index(dataBulk);
+        QuadTree.index(dataEntries);
 
         // (3) Range => Lat:(136..271), Long(180..360)
-        dataBulk = new ArrayList<DataEntry>();
+        dataEntries = new LinkedList<DataEntry>();
         for (long i = 2 * numberOfEntriesInRang + 1; i <= 3 * numberOfEntriesInRang; i++) {
             DataEntry de = new DataEntry();
             de.setId(i);
-            de.setGeoLocation(new GeoLocation(random.nextInt(45) + 136, random.nextInt(90) + 271));
-            dataBulk.add(de);
+            de.setGeoLocation(new GeoLocation(random.nextInt(45) + 136 - 90,
+                    random.nextInt(90) + 271 - 180));
+            dataEntries.add(de);
         }
-        qTree.index(dataBulk);
+        QuadTree.index(dataEntries);
 
-        result = qTree.search(new GeoLocation(47.5, 135), new GeoLocation(0, 0));
-        assertTrue(result.size() <= numberOfEntriesInRang);
+        result =
+                QuadTree.search(new GeoLocation(0 - 90, 0 - 180), new GeoLocation(90 - 90,
+                        180 - 180));
+        assertEquals(result.size(), numberOfEntriesInRang);
 
-        result = qTree.search(new GeoLocation(135, 270), new GeoLocation(0, 0));
-        assertTrue(result.size() >= 2 * numberOfEntriesInRang
-                && result.size() < 3 * numberOfEntriesInRang);
+        result =
+                QuadTree.search(new GeoLocation(91 - 90, 181 - 180), new GeoLocation(135 - 90,
+                        270 - 180));
+        assertEquals(result.size(), numberOfEntriesInRang);
 
-        result = qTree.search(new GeoLocation(180, 360), new GeoLocation(0, 0));
-        assertEquals(3 * numberOfEntriesInRang, result.size());
+        result =
+                QuadTree.search(new GeoLocation(0 - 90, 0 - 180), new GeoLocation(135 - 90,
+                        270 - 180));
+        assertEquals(result.size(), 2 * numberOfEntriesInRang);
+
+        result =
+                QuadTree.search(new GeoLocation(0 - 90, 0 - 180), new GeoLocation(180 - 90,
+                        360 - 180));
+        assertEquals(result.size(), 3 * numberOfEntriesInRang);
     }
 
-    // Test search out of the bounding box
+    /**
+     * Test search out of the bounding box
+     */
     @Test
-    public void testQuadTree_3() {
+    public void testSearchingOutOfWorld() {
         double upperLat = 100;
         double upperLong = 50;
         double lowerLat = 20;
         double lowerLong = 10;
-        int maxCapacity = 100;
-        int numberOfDataEntries = 100000;
+        int maxCapacity = 15;
+        int numberOfDataEntries = 1000;
 
         GeoLocation bb_upperRight = new GeoLocation(upperLat + 50, upperLong + 50);
 
         GeoLocation bb_lowerLeft = new GeoLocation(upperLat + 10, upperLong + 5);
 
-        QuadTree qTree =
-                new QuadTree(maxCapacity, new GeoLocation(upperLat, upperLong), new GeoLocation(
-                        lowerLat, lowerLong));
+        QuadTree QuadTree = new QuadTree(maxCapacity);
 
-        ArrayList<DataEntry> dataBulk = new ArrayList<DataEntry>();
+        Queue<DataEntry> dataEntries = new LinkedList<DataEntry>();
         Random random = new Random();
         for (long i = 1; i <= numberOfDataEntries; i++) {
             DataEntry de = new DataEntry();
             de.setId(i);
             de.setGeoLocation(new GeoLocation(random.nextInt((int) (upperLat - lowerLat))
                     + lowerLat, random.nextInt((int) (upperLong - lowerLong)) + lowerLong));
-            dataBulk.add(de);
+            dataEntries.add(de);
         }
 
-        qTree.index(dataBulk);
-        ArrayList<DataEntry> result = qTree.search(bb_upperRight, bb_lowerLeft);
+        QuadTree.index(dataEntries);
+        List<DataEntry> result = QuadTree.search(bb_lowerLeft, bb_upperRight);
 
-        // Result should be empty
         assertEquals(result.size(), 0);
     }
 
+    /**
+     * Test search where there is no data
+     */
+    @Test
+    public void testSearchingEmptyTree() {
+        double upperLat = 100;
+        double upperLong = 50;
+        double lowerLat = 20;
+        double lowerLong = 10;
+        int maxCapacity = 100;
+
+        QuadTree QuadTree = new QuadTree(maxCapacity);
+
+        List<DataEntry> result =
+                QuadTree.search(new GeoLocation(lowerLat, lowerLong), new GeoLocation(upperLat,
+                        upperLong));
+
+        assertEquals(result.size(), 0);
+    }
+
+    /**
+     * Check processing Time, try inserting 15 bulk(100K dataEntry)
+     */
+    // @Test
+    public void testInsertMaxNumOfDataEntries() {
+        int maxCapacity = 256000;
+        final int numberOfEntriesInRang = 100000;
+        int numberOfTrials = 80;
+
+        QuadTree QuadTree = new QuadTree(maxCapacity);
+        Random random = new Random();
+
+        Queue<DataEntry> dataEntries;
+        while (numberOfTrials-- > 0) {
+            dataEntries = new LinkedList<DataEntry>();
+            for (long i = 1; i <= numberOfEntriesInRang; i++) {
+                DataEntry de = new DataEntry();
+                de.setId(i);
+                de.setGeoLocation(new GeoLocation(random.nextInt(180) - 90,
+                        random.nextInt(360) - 180));
+                dataEntries.add(de);
+            }
+            double begin = System.currentTimeMillis();
+
+            QuadTree.index(dataEntries);
+
+            System.err.println("Trial # " + (80 - numberOfTrials) + " ,Time=  "
+                    + (System.currentTimeMillis() - begin));
+        }
+    }
 }
