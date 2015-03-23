@@ -1,8 +1,12 @@
+/**
+ * GeoLocation with latitude and longitude.
+ */
 package quadTree;
 
+
 /**
- * @author elmongui
- *
+ * @author saleh
+ * 
  */
 public class GeoLocation {
 

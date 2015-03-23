@@ -1,177 +1,205 @@
 /**
- * 
+ * QuadTree Node, Each Node has Bounding Box, 4 or zero children
  */
 
 /**
- * @author mohamed
+ * @author saleh
  * 
  */
 
 package quadTree;
 
+import java.util.ArrayList;
+
 public class QuadTreeNode {
 
-	public QuadTreeNode[] children; // children array is null or has 4 elements
-	// NW,NE,SW,SE
-	DataEntry[] dataEntries;
-	private GeoLocation upperRight;
-	private GeoLocation lowerLeft;
-	private int maxCapacity;
+    // children array is null or has 4 elements NW,NE,SW,SE
+    private QuadTreeNode[] children;
+    private ArrayList<DataEntry> dataEntries;
+    private GeoLocation lowerLeft;
+    private GeoLocation upperRight;
 
-	public QuadTreeNode(int maxCapacity, GeoLocation upperRight, GeoLocation lowerLeft) {
-		this.maxCapacity = maxCapacity;
-		dataEntries = new DataEntry[maxCapacity];
-		this.lowerLeft = lowerLeft;
-		this.upperRight = upperRight;
-	}
+    /**
+     * @param lowerLeft
+     * @param upperRight
+     */
+    public QuadTreeNode(GeoLocation upperRight, GeoLocation lowerLeft) {
+        this.lowerLeft = lowerLeft;
+        this.upperRight = upperRight;
+        setDataEntries(new ArrayList<DataEntry>());
+    }
 
-	public boolean insert(DataEntry dataEntry) {
-		// Ensure that DataEntry location lies in this quad
-		if (!containsPoint(dataEntry.getGeoLocation())) {
-			return false;
-		}
+    /**
+     * @param dataEntries
+     */
+    public void setDataEntries(ArrayList<DataEntry> dataEntries) {
+        this.dataEntries = dataEntries;
+    }
 
-		// Search for the leaf node which should containd new point
-		if (children != null) {
-			for (QuadTreeNode childNode : children) {
-				if (childNode.containsPoint(dataEntry.getGeoLocation()))
-					return childNode.insert(dataEntry);
-			}
-			System.err.println("No Child contains new DE while parent contains it");
-			return false; // shouldn't excuted, point should lies in one of the
-			// four children
-		}
+    /**
+     * @return children
+     */
+    public QuadTreeNode[] getChildren() {
+        return children;
+    }
 
-		// try to add new DE if Quad still has empty slots
-		if (addDataEntry(dataEntry))
-			return true;
-		else {
-			subdivide();
-			return insert(dataEntry);
-		}
-	}
+    /**
+     * Set Children
+     * 
+     * @param children
+     */
+    public void setChildren(QuadTreeNode[] children) {
+        this.children = children;
+    }
 
-	private boolean addDataEntry(DataEntry dataEntry) {
-		for (int i = 0; i < dataEntries.length; i++) {
-			if (dataEntries[i] == null) {
-				dataEntries[i] = dataEntry;
-				return true;
-			}
-		}
-		return false;
-	}
+    /**
+     * @return DataEntries
+     */
+    public ArrayList<DataEntry> getDataEntries() {
+        return dataEntries;
+    }
 
-	public boolean liesInBoundingBox(GeoLocation bb_upperRight, GeoLocation bb_lowerLeft) {
-		if (bb_upperRight.getLatitude() >= upperRight.getLatitude()
-		        && bb_upperRight.getLongitude() >= upperRight.getLongitude()
-		        && bb_lowerLeft.getLatitude() <= lowerLeft.getLatitude()
-		        && bb_lowerLeft.getLongitude() <= lowerLeft.getLongitude())
-			return true;
-		else
-			return false;
-	}
+    /**
+     * @return lowerLeft
+     */
+    public GeoLocation getLowerLeft() {
+        return lowerLeft;
+    }
 
-	public boolean containsPoint(GeoLocation point) {
-		if (point.getLatitude() >= lowerLeft.getLatitude()
-		        && point.getLatitude() <= upperRight.getLatitude()
-		        && point.getLongitude() >= lowerLeft.getLongitude()
-		        && point.getLongitude() <= upperRight.getLongitude())
-			return true;
-		else
-			return false;
-	}
+    /**
+     * @return upperRight
+     */
+    public GeoLocation getUpperRight() {
+        return upperRight;
+    }
 
-	public boolean interset(GeoLocation bb_upperRight, GeoLocation bb_lowerLeft) {
-		if ((upperRight.getLatitude() < bb_lowerLeft.getLatitude())
-		        || (lowerLeft.getLatitude() > bb_upperRight.getLatitude())
-		        || (lowerLeft.getLongitude() > bb_upperRight.getLongitude())
-		        || (upperRight.getLongitude() < bb_lowerLeft.getLongitude()))
-			return false;
-		else
-			return true;
-	}
+    /**
+     * Insert new dataEntry to the node
+     * 
+     * @param dataEntry
+     * @return true if new dataEntry successfully inserted,else return false
+     */
+    public boolean insert(DataEntry dataEntry) {
+        // Ensure that DataEntry location lies in this quad
+        if (!contains(dataEntry.getGeoLocation())) {
+            return false;
+        }
 
-	private void subdivide() {
-		// Create the 4 children with specific area
-		children = new QuadTreeNode[QuadTree.NUMBER_OF_CHILDREN];
+        // Insert into the leaf node which contains new dataEntry location
+        if (!isLeaf()) {
+            return getBoundingChild(dataEntry).insert(dataEntry);
+        }
 
-		double latitude_diff = upperRight.getLatitude() - lowerLeft.getLatitude();
-		double longitude_diff = upperRight.getLongitude() - lowerLeft.getLongitude();
+        // add new dataEntry current node, even if size is more than the max(subdivided called after
+        // inserting all the bulk)
+        dataEntries.add(dataEntry);
+        return true;
+    }
 
-		children[0] =
-		        new QuadTreeNode(maxCapacity, new GeoLocation(upperRight.getLatitude(),
-		                lowerLeft.getLongitude() + longitude_diff / 2), new GeoLocation(
-		                lowerLeft.getLatitude() + latitude_diff / 2, lowerLeft.getLongitude()));
+    /**
+     * Check if BB contains the node
+     * 
+     * @param bb_upperRight
+     * @param bb_lowerLeft
+     * @return true if node lies in the bounding box, else return false
+     */
+    public boolean isInside(GeoLocation bb_upperRight, GeoLocation bb_lowerLeft) {
+        if (bb_upperRight.getLatitude() >= upperRight.getLatitude()
+                && bb_upperRight.getLongitude() >= upperRight.getLongitude()
+                && bb_lowerLeft.getLatitude() <= lowerLeft.getLatitude()
+                && bb_lowerLeft.getLongitude() <= lowerLeft.getLongitude())
+            return true;
+        else
+            return false;
+    }
 
-		children[1] =
-		        new QuadTreeNode(maxCapacity, new GeoLocation(upperRight.getLatitude(),
-		                upperRight.getLongitude()), new GeoLocation(lowerLeft.getLatitude()
-		                + latitude_diff / 2, lowerLeft.getLongitude() + longitude_diff / 2));
 
-		children[2] =
-		        new QuadTreeNode(maxCapacity, new GeoLocation(lowerLeft.getLatitude() + latitude_diff / 2,
-		                lowerLeft.getLongitude() + longitude_diff / 2), new GeoLocation(
-		                lowerLeft.getLatitude(), lowerLeft.getLongitude()));
+    /**
+     * Add dataEntries which lies in BB to the results
+     * 
+     * @param dataEntryResult
+     * @param bb_upperRight
+     * @param bb_lowerLeft
+     */
+    public void addIntersectedDataEntries(ArrayList<DataEntry> dataEntriesResult,
+            GeoLocation bb_upperRight, GeoLocation bb_lowerLeft) {
+        for (DataEntry dataEntry : dataEntries) {
+            double latitude = dataEntry.getGeoLocation().getLatitude();
+            double longitude = dataEntry.getGeoLocation().getLongitude();
+            if (latitude >= bb_lowerLeft.getLatitude() && latitude <= bb_upperRight.getLatitude()
+                    && longitude >= bb_lowerLeft.getLongitude()
+                    && longitude <= bb_upperRight.getLongitude())
+                dataEntriesResult.add(dataEntry);
+        }
+    }
 
-		children[3] =
-		        new QuadTreeNode(maxCapacity, new GeoLocation(lowerLeft.getLatitude() + latitude_diff / 2,
-		                upperRight.getLongitude()), new GeoLocation(lowerLeft.getLatitude(),
-		                lowerLeft.getLongitude() + longitude_diff / 2));
 
-		// Assign points of current node to new children
-		for (DataEntry dataEntry : dataEntries) {
-			for (QuadTreeNode child : children) {
-				if (child.insert(dataEntry))
-					break;
-			}
-		}
-		dataEntries = null;
-	}
+    /**
+     * @return true if node is a leaf, else return false
+     */
+    public boolean isLeaf() {
+        return (dataEntries != null);
+    }
 
-	public void printIds() {
-		System.out.println("Ids in " + "upperRight: " + upperRight.getLatitude() + ","
-		        + upperRight.getLongitude() + " , lowerLeft: " + lowerLeft.getLatitude() + ","
-		        + lowerLeft.getLongitude());
-		for (DataEntry dataEntry : dataEntries) {
-			if (dataEntry != null) {
-				System.out.print(dataEntry.getId() + ",");
-			}
-		}
 
-		System.out.println();
-	}
+    /**
+     * While subdividing, divided node's DataEntries will reassign to its children Given that
+     * Node(Quad) divide equally to 4 Quads, This function return which children should containg the
+     * passed DataEntry
+     * 
+     * @param dataEntry
+     * @return Node(Quad) child which contains passed DataEntry
+     */
+    public QuadTreeNode getBoundingChild(DataEntry dataEntry) {
+        double halfHeight = (upperRight.getLatitude() - lowerLeft.getLatitude()) / 2;
+        double halfWidth = (upperRight.getLongitude() - lowerLeft.getLongitude()) / 2;
 
-	public void printInternalNode() {
-		System.out.println("Internal Node " + "upperRight: " + upperRight.getLatitude() + ","
-		        + upperRight.getLongitude() + " , lowerLeft: " + lowerLeft.getLatitude() + ","
-		        + lowerLeft.getLongitude());
-	}
+        return children[(((upperRight.getLongitude() - dataEntry.getGeoLocation().getLongitude()) >= halfWidth) ? 0
+                : 1)
+                | ((((upperRight.getLatitude() - dataEntry.getGeoLocation().getLatitude()) >= halfHeight) ? 1
+                        : 0) << 1)];
+    }
 
-	public static void main(String[] args) {
 
-		// TEST dividing function
+    /**
+     * @param point
+     * @return true if the Node(Quad) contains the passed point
+     */
+    private boolean contains(GeoLocation point) {
+        if (isSameSideOfTheWorld()) {
+            return point.getLongitude() >= lowerLeft.getLongitude()
+                    && point.getLongitude() <= upperRight.getLongitude()
+                    && point.getLatitude() >= lowerLeft.getLatitude()
+                    && point.getLatitude() <= upperRight.getLatitude();
+        } else if (point.getLongitude() > 0) {
+            return point.getLongitude() >= lowerLeft.getLongitude()
+                    && point.getLatitude() >= lowerLeft.getLatitude()
+                    && point.getLatitude() <= upperRight.getLatitude();
+        } else {
+            return point.getLongitude() <= upperRight.getLongitude()
+                    && point.getLatitude() >= lowerLeft.getLatitude()
+                    && point.getLatitude() <= upperRight.getLatitude();
+        }
+    }
 
-		GeoLocation two = new GeoLocation(100, 50);
-		GeoLocation one = new GeoLocation(20, 10);
 
-		QuadTreeNode testNode = new QuadTreeNode(0, two, one);
+    /**
+     * @return true if the Node(Quad) lies in the same side of the world
+     */
+    private boolean isSameSideOfTheWorld() {
+        return lowerLeft.getLongitude() < upperRight.getLongitude();
+    }
 
-		testNode.subdivide();
 
-		System.out.println("TestNode");
-		System.out.print("UpperRight => latitude= " + testNode.upperRight.getLatitude()
-		        + " longitude= " + testNode.upperRight.getLongitude());
-		System.out.println(",, LowerLeft => latitude= " + testNode.lowerLeft.getLatitude()
-		        + " longitude= " + testNode.lowerLeft.getLongitude());
-		System.out.println();
-		for (QuadTreeNode node : testNode.children) {
-			System.out.println(node);
-			System.out.print("UpperRight => latitude= " + node.upperRight.getLatitude()
-			        + " longitude= " + node.upperRight.getLongitude());
-			System.out.println(",, LowerLeft => latitude= " + node.lowerLeft.getLatitude()
-			        + " longitude= " + node.lowerLeft.getLongitude());
-			System.out.println();
-		}
-
-	}
+    /**
+     * @param upperRightBB
+     * @param lowerLeftBB
+     * @return true if Bounding Box intersects with the Node(Quad)
+     */
+    public boolean intersects(GeoLocation upperRightBB, GeoLocation lowerLeftBB) {
+        return this.upperRight.getLatitude() >= lowerLeftBB.getLatitude()
+                && upperRightBB.getLatitude() >= this.lowerLeft.getLatitude()
+                && this.upperRight.getLongitude() >= lowerLeftBB.getLongitude()
+                && upperRightBB.getLongitude() >= this.lowerLeft.getLongitude();
+    }
 }
