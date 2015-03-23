@@ -19,9 +19,11 @@ QuadTree: QuadTree Indexer with Index and search functions.
 ---------------------------------------------------------------------------------------------------
 
 Indexing Function:
+-----------------
 For good performance, use bulk loading instead of index items individually, Index bulk of data.
 WHY?
 TO run sundividing after some insertion is better than run after each item insertion.
 
-Searching Function,
+Searching Function:
+------------------
 return list of data interseted with the given bounding box
