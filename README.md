@@ -6,6 +6,7 @@ maxCapacity Integer which is the max number of Items(DataEntry for this Implemen
 
 
 Classes
+----------
 GeoLocation: represent point on the map using latitude and longitude.
 
 DataEntry: indexed object, for simplicity DataEntry just has id and location.
