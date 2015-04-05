@@ -19,6 +19,7 @@ public class QuadTree {
     // couldn't be changed
     private static final int NUMBER_OF_CHILDREN = 4;
     private QuadTreeNode rootNode;
+    // max number of dataEntries in each leaf node
     private final int maxCapacity;
     private final static GeoLocation WORLD_UPPER_RIGHT = new GeoLocation(90, 180);
     private final static GeoLocation WORLD_LOWER_LEFT = new GeoLocation(-90, -180);
