@@ -1,4 +1,4 @@
-# QuadTree Indexing.
+# QuadTree Indexing. [Edit]
 
 Java implementation for QuadTree Indexing.
 QuadTree Indexing Assumption : Index bounding is the whole world Create QuadTree with the
